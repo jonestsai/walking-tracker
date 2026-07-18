@@ -13,7 +13,7 @@ export default function RootLayout() {
           <Stack.Screen name="cities" options={{ title: "Cities" }} />
           <Stack.Screen name="friends" options={{ title: "Friends" }} />
           <Stack.Screen name="achievements" options={{ title: "Achievements" }} />
-          <Stack.Screen name="settings" options={{ title: "Settings" }} />
+          <Stack.Screen name="settings" options={{ title: "Settings", headerBackButtonDisplayMode: "minimal" }} />
         </Stack>
       </WalkProvider>
     </SafeAreaProvider>
