@@ -15,7 +15,17 @@ export async function startWalk(): Promise<string> {
   if (!foreground.granted) throw new Error("Precise foreground location is required to start a Walk.");
 
   let background = await Location.getBackgroundPermissionsAsync();
-  if (!background.granted) background = await Location.requestBackgroundPermissionsAsync();
+  if (!background.granted) {
+    await Location.requestBackgroundPermissionsAsync();
+    // iOS can dismiss the authorization sheet before Core Location exposes the
+    // updated status to the app. It is normally available a fraction of a
+    // second later, so don't send a user who chose "Always Allow" to Settings.
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      background = await Location.getBackgroundPermissionsAsync();
+      if (background.granted || attempt === 4) break;
+      await new Promise<void>((resolve) => setTimeout(resolve, 250));
+    }
+  }
   console.info("Walk background location permission", {
     granted: background.granted,
     status: background.status,
