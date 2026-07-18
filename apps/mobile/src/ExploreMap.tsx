@@ -15,7 +15,7 @@ const formatElapsed = (milliseconds: number) => {
 };
 
 export function ExploreMap() {
-  const { unlockedCells, replaceUnlockedCells, walking, busy, walkNewTiles, walkStartedAt, start, end } = useWalk();
+  const { unlockedCells, replaceUnlockedCells, walking, busy, walkNewTiles, walkStartedAt, unlockingStatus, start, end } = useWalk();
   const [now, setNow] = useState(Date.now());
   const cameraRef = useRef<CameraRef>(null);
   const exploredTiles = useMemo(() => cellsToFeatureCollection(unlockedCells), [unlockedCells]);
@@ -89,6 +89,7 @@ export function ExploreMap() {
 
       <View style={styles.walkControl}>
         {walking ? <View style={styles.activeSession}><Text style={styles.sessionMetric}>{formatElapsed(now - (walkStartedAt ?? now))}</Text><Text style={styles.sessionDivider}>·</Text><Text style={styles.sessionMetric}>{walkNewTiles} tiles</Text></View> : null}
+        {walking && unlockingStatus === "paused_for_speed" ? <View style={styles.speedPaused}><Text style={styles.speedPausedText}>You’re going too fast. Tile unlocking is paused.</Text></View> : null}
         <Pressable disabled={busy} onPress={() => void toggleWalk()} style={({ pressed }) => [styles.walkButton, (pressed || busy) && styles.walkButtonPressed]}>
           <Text style={styles.walkButtonText}>{busy ? "…" : walking ? "End Walk" : "Start Walk"}</Text>
         </Pressable>
@@ -103,6 +104,8 @@ const styles = StyleSheet.create({
   activeSession: { flexDirection: "row", alignItems: "center", gap: 7, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: "rgba(15, 23, 42, 0.9)" },
   sessionMetric: { color: "white", fontSize: 14, fontWeight: "800" },
   sessionDivider: { color: "#5eead4", fontSize: 15 },
+  speedPaused: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 16, backgroundColor: "#7c2d12" },
+  speedPausedText: { color: "#ffedd5", fontSize: 13, fontWeight: "700" },
   walkButton: { minWidth: 164, alignItems: "center", paddingHorizontal: 24, paddingVertical: 15, borderRadius: 28, backgroundColor: "#0f766e", shadowColor: "#0f172a", shadowOpacity: 0.25, shadowRadius: 10, shadowOffset: { width: 0, height: 5 }, elevation: 5 },
   walkButtonPressed: { opacity: 0.7 },
   walkButtonText: { color: "white", fontSize: 16, fontWeight: "800" },

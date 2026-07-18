@@ -4,6 +4,8 @@ import {
   gridPathCells,
   latLngToCell,
 } from "h3-js";
+import { applySpeedGate, metersBetween, type EligibleFixPair, type Fix, type UnlockingStatus, type ValidationState } from "./speedGate";
+import { isHighQuality } from "./fixQuality";
 
 type Env = {
   SUPABASE_URL: string;
@@ -12,14 +14,7 @@ type Env = {
   MAX_HORIZONTAL_ACCURACY_METERS: string;
   MAX_FIX_AGE_SECONDS: string;
   MAX_INTERPOLATION_GAP_METERS: string;
-};
-
-type Fix = {
-  latitude: number;
-  longitude: number;
-  horizontalAccuracy: number;
-  timestamp: string;
-  precise: boolean;
+  MAX_UNLOCK_SPEED_KPH: string;
 };
 
 type AwardCell = {
@@ -37,33 +32,6 @@ const json = (body: unknown, status = 200) =>
     headers: { "content-type": "application/json; charset=utf-8" },
   });
 
-const metersBetween = (a: Fix, b: Fix) => {
-  const radians = (value: number) => (value * Math.PI) / 180;
-  const dLat = radians(b.latitude - a.latitude);
-  const dLon = radians(b.longitude - a.longitude);
-  const lat1 = radians(a.latitude);
-  const lat2 = radians(b.latitude);
-  const h =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
-  return 6_371_000 * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
-};
-
-function isHighQuality(fix: Fix, env: Env): boolean {
-  const timestamp = Date.parse(fix.timestamp);
-  const maxAge = Number(env.MAX_FIX_AGE_SECONDS) * 1_000;
-  return (
-    fix.precise &&
-    Number.isFinite(fix.latitude) &&
-    Number.isFinite(fix.longitude) &&
-    Number.isFinite(fix.horizontalAccuracy) &&
-    fix.horizontalAccuracy >= 0 &&
-    fix.horizontalAccuracy <= Number(env.MAX_HORIZONTAL_ACCURACY_METERS) &&
-    Number.isFinite(timestamp) &&
-    Math.abs(Date.now() - timestamp) <= maxAge
-  );
-}
-
 function toAwardCell(h3Index: string): AwardCell {
   const ring = cellToBoundary(h3Index, true);
   const [longitude, latitude] = cellToLatLng(h3Index);
@@ -74,16 +42,12 @@ function toAwardCell(h3Index: string): AwardCell {
   };
 }
 
-function cellsFromFixes(fixes: Fix[], env: Env): AwardCell[] {
+function cellsFromEligiblePairs(pairs: EligibleFixPair[], env: Env): AwardCell[] {
   const resolution = Number(env.H3_RESOLUTION);
   const maxGap = Number(env.MAX_INTERPOLATION_GAP_METERS);
-  const qualified = fixes.filter((fix) => isHighQuality(fix, env));
   const confirmed = new Set<string>();
 
-  for (let index = 1; index < qualified.length; index += 1) {
-    const previous = qualified[index - 1];
-    const current = qualified[index];
-    if (!previous || !current) continue;
+  for (const { previous, current } of pairs) {
 
     const previousCell = latLngToCell(previous.latitude, previous.longitude, resolution);
     const currentCell = latLngToCell(current.latitude, current.longitude, resolution);
@@ -105,6 +69,32 @@ function cellsFromFixes(fixes: Fix[], env: Env): AwardCell[] {
   }
 
   return [...confirmed].map(toAwardCell);
+}
+
+type ValidationStateRow = {
+  latitude: number | null;
+  longitude: number | null;
+  horizontal_accuracy: number | null;
+  recorded_at: string | null;
+  unlocking_status: UnlockingStatus;
+  last_speed_kph: number | null;
+};
+
+function toValidationState(row: ValidationStateRow | undefined): ValidationState {
+  const previousFix = row && row.latitude != null && row.longitude != null && row.horizontal_accuracy != null && row.recorded_at != null
+    ? {
+      latitude: row.latitude,
+      longitude: row.longitude,
+      horizontalAccuracy: row.horizontal_accuracy,
+      timestamp: row.recorded_at,
+      precise: true as const,
+    }
+    : null;
+  return {
+    previousFix,
+    unlockingStatus: row?.unlocking_status ?? "unlocking",
+    lastSpeedKph: row?.last_speed_kph ?? null,
+  };
 }
 
 async function requireUser(request: Request, env: Env): Promise<SupabaseUser | null> {
@@ -130,7 +120,10 @@ async function rpc<T>(env: Env, name: string, body: unknown): Promise<T> {
     body: JSON.stringify(body),
   });
   if (!response.ok) throw new Error(await response.text());
-  return (await response.json()) as T;
+  // PostgreSQL functions returning void produce an empty successful response.
+  // Other RPCs return JSON, so support both shapes in one helper.
+  const responseBody = await response.text();
+  return (responseBody ? JSON.parse(responseBody) : null) as T;
 }
 
 async function handle(request: Request, env: Env): Promise<Response> {
@@ -186,14 +179,38 @@ async function handle(request: Request, env: Env): Promise<Response> {
     if (fixes.length === 0 || fixes.length > 100) {
       return json({ error: "Provide 1 to 100 location fixes." }, 400);
     }
-    const cells = cellsFromFixes(fixes, env);
+    const maxSpeedKph = Number(env.MAX_UNLOCK_SPEED_KPH);
+    if (!Number.isFinite(maxSpeedKph) || maxSpeedKph <= 0) {
+      throw new Error("MAX_UNLOCK_SPEED_KPH must be a positive number.");
+    }
+    const previousRows = await rpc<ValidationStateRow[]>(env, "walk_session_validation_state", {
+      p_user_id: user.id,
+      p_session_id: fixesMatch[1],
+    });
+    const speedGate = applySpeedGate(fixes.filter((fix) => isHighQuality(fix, {
+      maxHorizontalAccuracyMeters: Number(env.MAX_HORIZONTAL_ACCURACY_METERS),
+      maxFixAgeSeconds: Number(env.MAX_FIX_AGE_SECONDS),
+    })), toValidationState(previousRows[0]), maxSpeedKph);
+    const cells = cellsFromEligiblePairs(speedGate.eligiblePairs, env);
     const awarded = await rpc<Array<{ h3_index: string }>>(env, "award_h3_cells", {
       p_user_id: user.id,
       p_session_id: fixesMatch[1],
       p_cells: cells,
     });
+    await rpc<null>(env, "save_walk_session_validation_state", {
+      p_user_id: user.id,
+      p_session_id: fixesMatch[1],
+      p_last_fix: speedGate.state.previousFix,
+      p_unlocking_status: speedGate.state.unlockingStatus,
+      p_last_speed_kph: speedGate.state.lastSpeedKph,
+    });
     const latest = fixes.at(-1);
-    return json({ candidateCell: latest ? latLngToCell(latest.latitude, latest.longitude, Number(env.H3_RESOLUTION)) : null, awarded });
+    return json({
+      candidateCell: latest ? latLngToCell(latest.latitude, latest.longitude, Number(env.H3_RESOLUTION)) : null,
+      awarded,
+      unlockingStatus: speedGate.state.unlockingStatus,
+      speedKph: speedGate.state.lastSpeedKph,
+    });
   }
 
   const endMatch = url.pathname.match(/^\/v1\/walk-sessions\/([\w-]+)\/end$/);

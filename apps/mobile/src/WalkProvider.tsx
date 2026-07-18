@@ -1,6 +1,7 @@
 import { createContext, type PropsWithChildren, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { activeWalk, activeWalkStartedAt, initialiseQueue } from "./locationQueue";
 import { endWalk, flushQueuedFixes, startWalk } from "./tracking";
+import type { UnlockingStatus } from "./api";
 
 type WalkContextValue = {
   walking: boolean;
@@ -8,6 +9,7 @@ type WalkContextValue = {
   unlockedCells: string[];
   walkStartedAt: number | null;
   walkNewTiles: number;
+  unlockingStatus: UnlockingStatus;
   replaceUnlockedCells: (cells: string[]) => void;
   start: () => Promise<void>;
   end: () => Promise<void>;
@@ -21,6 +23,7 @@ export function WalkProvider({ children }: PropsWithChildren) {
   const [unlockedCells, setUnlockedCells] = useState<string[]>([]);
   const [walkStartedAt, setWalkStartedAt] = useState<number | null>(null);
   const [walkNewTiles, setWalkNewTiles] = useState(0);
+  const [unlockingStatus, setUnlockingStatus] = useState<UnlockingStatus>("unlocking");
 
   useEffect(() => {
     initialiseQueue();
@@ -32,9 +35,10 @@ export function WalkProvider({ children }: PropsWithChildren) {
     if (!walking) return;
     const timer = setInterval(() => {
       void flushQueuedFixes()
-        .then((cells) => {
-          setUnlockedCells((current) => [...new Set([...current, ...cells])]);
-          setWalkNewTiles((current) => current + cells.length);
+        .then(({ awardedCells, unlockingStatus: nextStatus }) => {
+          setUnlockedCells((current) => [...new Set([...current, ...awardedCells])]);
+          setWalkNewTiles((current) => current + awardedCells.length);
+          if (nextStatus) setUnlockingStatus(nextStatus);
         })
         .catch(console.warn);
     }, 5_000);
@@ -47,6 +51,7 @@ export function WalkProvider({ children }: PropsWithChildren) {
     unlockedCells,
     walkStartedAt,
     walkNewTiles,
+    unlockingStatus,
     replaceUnlockedCells: setUnlockedCells,
     start: async () => {
       setBusy(true);
@@ -55,6 +60,7 @@ export function WalkProvider({ children }: PropsWithChildren) {
         setWalking(true);
         setWalkStartedAt(Date.now());
         setWalkNewTiles(0);
+        setUnlockingStatus("unlocking");
       } finally {
         setBusy(false);
       }
@@ -62,9 +68,10 @@ export function WalkProvider({ children }: PropsWithChildren) {
     end: async () => {
       setBusy(true);
       try {
-        const cells = await flushQueuedFixes();
-        setUnlockedCells((current) => [...new Set([...current, ...cells])]);
-        setWalkNewTiles((current) => current + cells.length);
+        const { awardedCells, unlockingStatus: nextStatus } = await flushQueuedFixes();
+        setUnlockedCells((current) => [...new Set([...current, ...awardedCells])]);
+        setWalkNewTiles((current) => current + awardedCells.length);
+        if (nextStatus) setUnlockingStatus(nextStatus);
         await endWalk();
         setWalking(false);
         setWalkStartedAt(null);
@@ -72,7 +79,7 @@ export function WalkProvider({ children }: PropsWithChildren) {
         setBusy(false);
       }
     },
-  }), [busy, unlockedCells, walkNewTiles, walkStartedAt, walking]);
+  }), [busy, unlockedCells, unlockingStatus, walkNewTiles, walkStartedAt, walking]);
 
   return <WalkContext.Provider value={value}>{children}</WalkContext.Provider>;
 }

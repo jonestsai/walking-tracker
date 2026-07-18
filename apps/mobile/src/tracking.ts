@@ -4,6 +4,9 @@ import { api } from "./api";
 import { hasPreciseLocationAccess } from "./locationPermissions";
 import { activeWalk, clearActiveWalk, initialiseQueue, nextBatch, removeBatch, setActiveWalk } from "./locationQueue";
 import { LOCATION_TASK } from "./locationTask";
+import type { UnlockingStatus } from "./api";
+
+export type FlushResult = { awardedCells: string[]; unlockingStatus: UnlockingStatus | null; speedKph: number | null };
 
 export async function startWalk(): Promise<string> {
   initialiseQueue();
@@ -61,18 +64,22 @@ export async function startWalk(): Promise<string> {
   return session.id;
 }
 
-export async function flushQueuedFixes(): Promise<string[]> {
+export async function flushQueuedFixes(): Promise<FlushResult> {
   const sessionId = activeWalk();
-  if (!sessionId) return [];
+  if (!sessionId) return { awardedCells: [], unlockingStatus: null, speedKph: null };
   const awarded: string[] = [];
+  let unlockingStatus: UnlockingStatus | null = null;
+  let speedKph: number | null = null;
   while (true) {
     const batch = nextBatch(sessionId);
     if (batch.length === 0) break;
     const result = await api.uploadFixes(sessionId, batch.map((entry) => entry.fix));
     removeBatch(batch.map((entry) => entry.id));
     awarded.push(...result.awarded.map((cell) => cell.h3_index));
+    unlockingStatus = result.unlockingStatus;
+    speedKph = result.speedKph;
   }
-  return awarded;
+  return { awardedCells: awarded, unlockingStatus, speedKph };
 }
 
 export async function endWalk(): Promise<void> {
