@@ -14,6 +14,7 @@ export type UnlockingStatus = "unlocking" | "paused_for_speed";
 export type TrackingMode = "foreground_explore" | "background_walk";
 export type ProgressSummary = { total_tiles: number; tiles_today: number; current_streak: number };
 export type RecentSession = { id: string; tracking_mode: TrackingMode; started_at: string; ended_at: string | null; awarded_cell_count: number };
+export type CityProgress = { city_id: string; city_name: string; country_code: "US" | "CA"; subdivision_code: string; tile_count: number };
 
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const token = await getAccessToken();
@@ -42,4 +43,5 @@ export const api = {
     return request<{ cells: string[] }>(`/v1/explored-cells?${query}`);
   },
   progress: () => request<{ summary: ProgressSummary; sessions: RecentSession[] }>("/v1/progress"),
+  cities: () => request<{ cities: CityProgress[] }>("/v1/cities"),
 };

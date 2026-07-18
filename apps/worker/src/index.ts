@@ -32,9 +32,10 @@ const json = (body: unknown, status = 200) =>
     headers: { "content-type": "application/json; charset=utf-8" },
   });
 
-function toAwardCell(h3Index: string): AwardCell {
+export function toAwardCell(h3Index: string): AwardCell {
   const ring = cellToBoundary(h3Index, true);
-  const [longitude, latitude] = cellToLatLng(h3Index);
+  // h3-js returns [latitude, longitude]; GeoJSON/PostGIS requires [longitude, latitude].
+  const [latitude, longitude] = cellToLatLng(h3Index);
   return {
     h3Index,
     boundary: { type: "Polygon", coordinates: [ring] },
@@ -152,6 +153,17 @@ async function handle(request: Request, env: Env): Promise<Response> {
     ]);
     const summary = summaryRows[0] ?? { total_tiles: 0, tiles_today: 0, current_streak: 0 };
     return json({ summary, sessions });
+  }
+
+  if (request.method === "GET" && url.pathname === "/v1/cities") {
+    const cities = await rpc<Array<{
+      city_id: string;
+      city_name: string;
+      country_code: "US" | "CA";
+      subdivision_code: string;
+      tile_count: number;
+    }>>(env, "user_city_progress", { p_user_id: user.id });
+    return json({ cities });
   }
 
   if (request.method === "GET" && url.pathname === "/v1/explored-cells") {

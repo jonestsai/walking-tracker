@@ -16,4 +16,8 @@ Privacy-first walking exploration app. H3 resolution 12 is the canonical v1 unlo
 4. Copy `apps/mobile/.env.example` to `apps/mobile/.env` and provide the Worker URL, Supabase URL, and Supabase Publishable key.
 5. Install dependencies with `npm install`, then run `npm run dev:mobile` or `npm run dev:worker`.
 
+## City boundaries
+
+City attribution uses versioned legal municipal polygons, not reverse geocoding. The initial North America roster and the authoritative import procedure are in [`supabase/city-boundaries`](./supabase/city-boundaries/README.md). Apply the city-attribution migration, load the reviewed official boundaries, then run `select public.refresh_h3_cell_city_assignments();` to classify existing tiles.
+
 The app must run in an Expo development build, not Expo Go, because iOS background location is required.
