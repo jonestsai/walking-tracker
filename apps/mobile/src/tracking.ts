@@ -1,6 +1,7 @@
 import { Alert } from "react-native";
 import * as Location from "expo-location";
 import { api } from "./api";
+import { hasPreciseLocationAccess } from "./locationPermissions";
 import { activeWalk, clearActiveWalk, initialiseQueue, nextBatch, removeBatch, setActiveWalk } from "./locationQueue";
 import { LOCATION_TASK } from "./locationTask";
 
@@ -40,6 +41,7 @@ export async function startWalk(): Promise<string> {
     canAskAgain: background.canAskAgain,
   });
   if (!background.granted) throw new Error("Background location is required to track a Walk while your phone is locked.");
+  if (!await hasPreciseLocationAccess()) throw new Error("Precise foreground location is required to start a Walk.");
 
   const session = await api.startTrackingSession("background_walk");
   setActiveWalk(session.id);

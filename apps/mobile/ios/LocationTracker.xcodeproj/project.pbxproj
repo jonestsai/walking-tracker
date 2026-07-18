@@ -13,6 +13,8 @@
 		BD4002945DAD462A17751957 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88D638FBBE0A34D793EA960F /* ExpoModulesProvider.swift */; };
 		EDC83E3EDAF622EC4AFC098D /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AFBBBB93F5CBEE6431702C5E /* PrivacyInfo.xcprivacy */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
+		F11748472D0307B40044C1D9 /* LocationAccuracyModule.m in Sources */ = {isa = PBXBuildFile; fileRef = F11748452D0307B40044C1D9 /* LocationAccuracyModule.m */; };
+		F11748482D0307B40044C1D9 /* LocationAccuracyModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748462D0307B40044C1D9 /* LocationAccuracyModule.swift */; };
 		F82EC911E5327A55D3E77B97 /* libPods-LocationTracker.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BCA3C1F09DDDD1F2EA40BAF2 /* libPods-LocationTracker.a */; };
 /* End PBXBuildFile section */
 
@@ -30,6 +32,8 @@
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = LocationTracker/AppDelegate.swift; sourceTree = "<group>"; };
 		F11748442D0722820044C1D9 /* LocationTracker-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "LocationTracker-Bridging-Header.h"; path = "LocationTracker/LocationTracker-Bridging-Header.h"; sourceTree = "<group>"; };
+		F11748452D0307B40044C1D9 /* LocationAccuracyModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = LocationAccuracyModule.m; path = LocationTracker/LocationAccuracyModule.m; sourceTree = "<group>"; };
+		F11748462D0307B40044C1D9 /* LocationAccuracyModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LocationAccuracyModule.swift; path = LocationTracker/LocationAccuracyModule.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -65,6 +69,8 @@
 			children = (
 				F11748412D0307B40044C1D9 /* AppDelegate.swift */,
 				F11748442D0722820044C1D9 /* LocationTracker-Bridging-Header.h */,
+				F11748452D0307B40044C1D9 /* LocationAccuracyModule.m */,
+				F11748462D0307B40044C1D9 /* LocationAccuracyModule.swift */,
 				BB2F792B24A3F905000567C9 /* Supporting */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
@@ -362,6 +368,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
+				F11748472D0307B40044C1D9 /* LocationAccuracyModule.m in Sources */,
+				F11748482D0307B40044C1D9 /* LocationAccuracyModule.swift in Sources */,
 				BD4002945DAD462A17751957 /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -65,12 +65,7 @@ export function ExploreMap() {
       const message = error instanceof Error ? error.message : "Unknown error";
       if (message.includes("setup cancelled")) return;
       if (message.includes("foreground") || message.includes("Background location")) {
-        const foregroundIssue = message.includes("foreground");
-        const locationTitle = foregroundIssue ? "Turn on precise location" : "Track with phone locked";
-        const locationMessage = foregroundIssue
-          ? "In Settings, tap Location. Choose “Always”, then turn on “Precise Location”."
-          : "In Settings, tap Location, then choose “Always”.";
-        Alert.alert(locationTitle, locationMessage, [
+        Alert.alert("Location required", "In Settings, tap Location. Choose “Always”, then turn on “Precise Location”.", [
           { text: "Not now", style: "cancel" },
           { text: "Settings", onPress: () => void Linking.openSettings() },
         ]);
