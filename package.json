@@ -1,0 +1,22 @@
+{
+  "name": "walking-tracker",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "postinstall": "patch-package",
+    "dev:mobile": "npm --workspace @walking-tracker/mobile run start",
+    "dev:worker": "npm --workspace @walking-tracker/worker run dev",
+    "typecheck": "npm run typecheck --workspaces"
+  },
+  "dependencies": {
+    "react": "19.1.0"
+  },
+  "devDependencies": {
+    "patch-package": "^8.0.1"
+  },
+  "overrides": {
+    "react": "19.1.0"
+  }
+}

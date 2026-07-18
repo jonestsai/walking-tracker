@@ -1,0 +1,15 @@
+diff --git a/node_modules/expo-updates/ios/EXUpdates.podspec b/node_modules/expo-updates/ios/EXUpdates.podspec
+index 4322948..49906e3 100644
+--- a/node_modules/expo-updates/ios/EXUpdates.podspec
++++ b/node_modules/expo-updates/ios/EXUpdates.podspec
+@@ -101,7 +101,9 @@ Pod::Spec.new do |s|
+     force_bundling_flag = ex_updates_native_debug ? "export FORCE_BUNDLING=1\n" : ""
+     s.script_phase = {
+       :name => 'Generate updates resources for expo-updates',
+-      :script => force_bundling_flag + 'bash -l -c "$PODS_TARGET_SRCROOT/../scripts/create-updates-resources-ios.sh"',
++      # Quote the expanded script path for the nested shell so project paths with
++      # spaces (for example, "Walking Tracker") are treated as one path.
++      :script => force_bundling_flag + "bash -l -c \"\\\"$PODS_TARGET_SRCROOT/../scripts/create-updates-resources-ios.sh\\\"\"",
+       :execution_position => :before_compile
+     }
+ 

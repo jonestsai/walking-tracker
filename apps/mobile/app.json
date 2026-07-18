@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "name": "Walking Tracker",
+    "slug": "walking-tracker",
+    "scheme": "walking-tracker",
+    "version": "0.1.0",
+    "runtimeVersion": "0.1.0",
+    "newArchEnabled": true,
+    "orientation": "portrait",
+    "ios": {
+      "bundleIdentifier": "com.example.walkingtracker",
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "location"
+        ],
+        "NSLocationWhenInUseUsageDescription": "Walking Tracker uses your precise location to unlock the tiles you visit while you walk.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Walking Tracker keeps unlocking tiles during an active Walk when your phone is locked."
+      }
+    },
+    "plugins": [
+      "expo-location",
+      "expo-sqlite",
+      "@maplibre/maplibre-react-native",
+      "./plugins/withQuotedReactNativeBundleScript",
+      "expo-router"
+    ],
+    "android": {
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ],
+      "package": "com.example.walkingtracker"
+    }
+  }
+}

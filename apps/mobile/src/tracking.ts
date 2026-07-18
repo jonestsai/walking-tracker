@@ -1,0 +1,65 @@
+import * as Location from "expo-location";
+import { api } from "./api";
+import { activeWalk, clearActiveWalk, initialiseQueue, nextBatch, removeBatch, setActiveWalk } from "./locationQueue";
+import { LOCATION_TASK } from "./locationTask";
+
+export async function startWalk(): Promise<string> {
+  initialiseQueue();
+  let foreground = await Location.getForegroundPermissionsAsync();
+  if (!foreground.granted) foreground = await Location.requestForegroundPermissionsAsync();
+  console.info("Walk foreground location permission", {
+    granted: foreground.granted,
+    status: foreground.status,
+    canAskAgain: foreground.canAskAgain,
+  });
+  if (!foreground.granted) throw new Error("Precise foreground location is required to start a Walk.");
+
+  let background = await Location.getBackgroundPermissionsAsync();
+  if (!background.granted) background = await Location.requestBackgroundPermissionsAsync();
+  console.info("Walk background location permission", {
+    granted: background.granted,
+    status: background.status,
+    canAskAgain: background.canAskAgain,
+  });
+  if (!background.granted) throw new Error("Background location is required to continue an active Walk while the screen is locked.");
+
+  const session = await api.startTrackingSession("background_walk");
+  setActiveWalk(session.id);
+  await Location.startLocationUpdatesAsync(LOCATION_TASK, {
+    accuracy: Location.Accuracy.BestForNavigation,
+    distanceInterval: 3,
+    deferredUpdatesDistance: 5,
+    deferredUpdatesInterval: 5_000,
+    activityType: Location.ActivityType.Fitness,
+    pausesUpdatesAutomatically: true,
+    showsBackgroundLocationIndicator: true,
+    foregroundService: {
+      notificationTitle: "Walk tracking active",
+      notificationBody: "Walking Tracker is unlocking explored cells.",
+    },
+  });
+  return session.id;
+}
+
+export async function flushQueuedFixes(): Promise<string[]> {
+  const sessionId = activeWalk();
+  if (!sessionId) return [];
+  const awarded: string[] = [];
+  while (true) {
+    const batch = nextBatch(sessionId);
+    if (batch.length === 0) break;
+    const result = await api.uploadFixes(sessionId, batch.map((entry) => entry.fix));
+    removeBatch(batch.map((entry) => entry.id));
+    awarded.push(...result.awarded.map((cell) => cell.h3_index));
+  }
+  return awarded;
+}
+
+export async function endWalk(): Promise<void> {
+  const sessionId = activeWalk();
+  if (!sessionId) return;
+  await flushQueuedFixes();
+  await Location.stopLocationUpdatesAsync(LOCATION_TASK);
+  await api.endWalk(sessionId);
+  clearActiveWalk();
+}

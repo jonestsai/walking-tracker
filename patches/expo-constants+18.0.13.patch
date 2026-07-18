@@ -1,0 +1,19 @@
+diff --git a/node_modules/expo-constants/.DS_Store b/node_modules/expo-constants/.DS_Store
+new file mode 100644
+index 0000000..a91834f
+Binary files /dev/null and b/node_modules/expo-constants/.DS_Store differ
+diff --git a/node_modules/expo-constants/ios/EXConstants.podspec b/node_modules/expo-constants/ios/EXConstants.podspec
+index fc4608a..05ea578 100644
+--- a/node_modules/expo-constants/ios/EXConstants.podspec
++++ b/node_modules/expo-constants/ios/EXConstants.podspec
+@@ -37,7 +37,9 @@ Pod::Spec.new do |s|
+   env_vars = ENV['PROJECT_ROOT'] ? "PROJECT_ROOT=#{ENV['PROJECT_ROOT']} " : ""
+   script_phase = {
+     :name => 'Generate app.config for prebuilt Constants.manifest',
+-    :script => "bash -l -c \"#{env_vars}$PODS_TARGET_SRCROOT/../scripts/get-app-config-ios.sh\"",
++    # Quote the expanded script path for the nested shell, so projects in directories
++    # with spaces (for example, \"Walking Tracker\") build correctly.
++    :script => "bash -l -c \"\\\"#{env_vars}$PODS_TARGET_SRCROOT/../scripts/get-app-config-ios.sh\\\"\"",
+     :execution_position => :before_compile
+   }
+   # :always_out_of_date is only available in CocoaPods 1.13.0 and later
