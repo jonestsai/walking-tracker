@@ -134,6 +134,18 @@ async function handle(request: Request, env: Env): Promise<Response> {
   const user = await requireUser(request, env);
   if (!user) return json({ error: "Unauthorized" }, 401);
 
+  if (request.method === "DELETE" && url.pathname === "/v1/account") {
+    const response = await fetch(`${env.SUPABASE_URL}/auth/v1/admin/users/${user.id}`, {
+      method: "DELETE",
+      headers: {
+        apikey: env.SUPABASE_SECRET_KEY,
+        authorization: `Bearer ${env.SUPABASE_SECRET_KEY}`,
+      },
+    });
+    if (!response.ok) throw new Error(await response.text());
+    return json({ deleted: true });
+  }
+
   if (request.method === "POST" && url.pathname === "/v1/tracking-sessions") {
     const payload = (await request.json()) as { mode?: TrackingMode };
     if (payload.mode !== "foreground_explore" && payload.mode !== "background_walk") {

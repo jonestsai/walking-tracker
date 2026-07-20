@@ -39,6 +39,10 @@ export function clearActiveWalk(): void {
   database.runSync("delete from active_walk where singleton = 1");
 }
 
+export function clearAllLocalWalkData(): void {
+  database.execSync("delete from queued_fixes; delete from active_walk;");
+}
+
 export function enqueueFixes(sessionId: string, fixes: FixPayload[]): void {
   for (const fix of fixes) {
     database.runSync("insert into queued_fixes (session_id, payload) values (?, ?)", sessionId, JSON.stringify(fix));

@@ -13,8 +13,8 @@
         "UIBackgroundModes": [
           "location"
         ],
-        "NSLocationWhenInUseUsageDescription": "WalkingAtlas uses your precise location to unlock the tiles you visit while you walk.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "WalkingAtlas keeps unlocking tiles during an active Walk when your phone is locked."
+        "NSLocationWhenInUseUsageDescription": "WalkingAtlas uses your precise location during an active Walk to identify and unlock tiles you visit.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "During an active Walk, WalkingAtlas uses your precise location in the background, including while your phone is locked, to continue unlocking tiles."
       }
     },
     "plugins": [

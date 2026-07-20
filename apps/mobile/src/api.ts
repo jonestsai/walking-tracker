@@ -32,6 +32,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 
 export const api = {
   startTrackingSession: (mode: TrackingMode) => request<{ id: string }>("/v1/tracking-sessions", { method: "POST", body: JSON.stringify({ mode }) }),
+  deleteAccount: () => request<{ deleted: true }>("/v1/account", { method: "DELETE" }),
   endWalk: (sessionId: string) => request<{ id: string }>(`/v1/walk-sessions/${sessionId}/end`, { method: "POST" }),
   uploadFixes: (sessionId: string, fixes: FixPayload[]) =>
     request<{ candidateCell: string | null; awarded: AwardedCell[]; unlockingStatus: UnlockingStatus; speedKph: number | null }>(`/v1/walk-sessions/${sessionId}/fixes`, {

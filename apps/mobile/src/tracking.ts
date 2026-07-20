@@ -22,7 +22,7 @@ export async function startWalk(): Promise<string> {
   let background = await Location.getBackgroundPermissionsAsync();
   if (!background.granted) {
     const continueToBackgroundPermission = await new Promise<boolean>((resolve) => {
-      Alert.alert("Track with phone locked", "Choose “Change to Always Allow” in the next prompt.", [
+      Alert.alert("Continue an active Walk while locked", "To keep unlocking tiles when your phone is locked, choose “Change to Always Allow” in the next iOS prompt. Location is collected only while an active Walk is running, and you can end a Walk at any time.", [
         { text: "Not now", style: "cancel", onPress: () => resolve(false) },
         { text: "Continue", onPress: () => resolve(true) },
       ]);

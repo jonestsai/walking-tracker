@@ -52,11 +52,11 @@
       <true/>
     </dict>
     <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-    <string>WalkingAtlas keeps unlocking tiles during an active Walk when your phone is locked.</string>
+    <string>During an active Walk, WalkingAtlas uses your precise location in the background, including while your phone is locked, to continue unlocking tiles.</string>
     <key>NSLocationAlwaysUsageDescription</key>
-    <string>WalkingAtlas keeps unlocking tiles during an active Walk when your phone is locked.</string>
+    <string>During an active Walk, WalkingAtlas uses your precise location in the background, including while your phone is locked, to continue unlocking tiles.</string>
     <key>NSLocationWhenInUseUsageDescription</key>
-    <string>WalkingAtlas uses your precise location to unlock the tiles you visit while you walk.</string>
+    <string>WalkingAtlas uses your precise location during an active Walk to identify and unlock tiles you visit.</string>
     <key>NSUserActivityTypes</key>
     <array>
       <string>$(PRODUCT_BUNDLE_IDENTIFIER).expo.index_route</string>
@@ -66,7 +66,6 @@
     <key>UIBackgroundModes</key>
     <array>
       <string>location</string>
-      <string>fetch</string>
     </array>
     <key>UILaunchStoryboardName</key>
     <string>SplashScreen</string>

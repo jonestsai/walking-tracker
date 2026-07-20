@@ -44,7 +44,7 @@ export function ExploreMap() {
     if (!foreground.canAskAgain) throw new Error("Precise foreground location is required to start a Walk.");
 
     return new Promise<boolean>((resolve) => {
-      Alert.alert("Unlock tiles as you walk", "Choose “Allow While Using App” in the next prompt.", [
+      Alert.alert("Location during an active Walk", "To start a Walk, choose “Allow While Using App” in the next iOS prompt. WalkingAtlas uses your precise location only while a Walk is active and sends it to WalkingAtlas to validate tile unlocks.", [
         { text: "Not now", style: "cancel", onPress: () => resolve(false) },
         { text: "Continue", onPress: () => resolve(true) },
       ]);
@@ -78,7 +78,7 @@ export function ExploreMap() {
 
   return (
     <View style={styles.container}>
-      <Map style={StyleSheet.absoluteFill} mapStyle={config.mapStyleUrl} logo={false} attribution={false} onRegionDidChange={updateViewport}>
+      <Map style={StyleSheet.absoluteFill} mapStyle={config.mapStyleUrl} onRegionDidChange={updateViewport}>
         <Camera ref={cameraRef} initialViewState={{ center: [-123.1207, 49.2827], zoom: 15 }} />
         {walking ? <UserLocation animated accuracy /> : null}
         <GeoJSONSource id="explored-tiles" data={exploredTiles}>
