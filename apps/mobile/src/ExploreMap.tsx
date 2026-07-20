@@ -78,7 +78,7 @@ export function ExploreMap() {
 
   return (
     <View style={styles.container}>
-      <Map style={StyleSheet.absoluteFill} mapStyle={config.mapStyleUrl} onRegionDidChange={updateViewport}>
+      <Map style={StyleSheet.absoluteFill} mapStyle={config.mapStyleUrl} logo={false} attribution={false} onRegionDidChange={updateViewport}>
         <Camera ref={cameraRef} initialViewState={{ center: [-123.1207, 49.2827], zoom: 15 }} />
         {walking ? <UserLocation animated accuracy /> : null}
         <GeoJSONSource id="explored-tiles" data={exploredTiles}>
