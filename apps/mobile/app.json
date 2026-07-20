@@ -2,6 +2,7 @@
   "expo": {
     "name": "WalkingAtlas",
     "slug": "walkingatlas",
+    "icon": "./assets/icon.png",
     "scheme": "walkingatlas",
     "version": "0.1.0",
     "runtimeVersion": "0.1.0",
