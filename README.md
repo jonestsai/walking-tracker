@@ -100,9 +100,10 @@ The easiest way to test WalkingAtlas is through TestFlight on an iPhone:
 
 1. Open the [WalkingAtlas TestFlight invite](https://testflight.apple.com/join/43ppa7kT) on your iPhone.
 2. Install Apple's **TestFlight** app if prompted, then accept the invite and install **WalkingAtlas**.
-3. Open WalkingAtlas and allow **Precise Location** and **Always Allow** location access when prompted. These permissions are required for background walk tracking.
-4. From the **Explore** tab, select **Start Walk**, walk outside for several minutes, and confirm that green hexagons appear and the in-walk tile count increases.
-5. End the walk, then open **Progress** to confirm the session and tile counts were recorded.
+3. Open WalkingAtlas, go to **Explore**, and select **Start Walk**. When iOS asks, choose **Allow While Using App** and make sure **Precise Location** is enabled. Do **not** choose **Allow Once**.
+4. When WalkingAtlas explains that it needs to continue an active walk while your phone is locked, select **Continue**. On the next iOS prompt, choose **Change to Always Allow**.
+5. If you chose **Allow Once**, or did not choose **Always**, open **Settings** → **Apps** → **WalkingAtlas** → **Location**, select **Always**, and turn on **Precise Location**. Then return to WalkingAtlas and select **Start Walk** again.
+6. Walk outside for several minutes and confirm that green hexagons appear and the in-walk tile count increases. End the walk, then open **Progress** to confirm the session and tile counts were recorded.
 
 > [!NOTE]
 > WalkingAtlas is currently available for iPhone through TestFlight. You do not need to set up the backend or build the app from source to evaluate it.
