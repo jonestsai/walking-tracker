@@ -15,7 +15,8 @@
           "location"
         ],
         "NSLocationWhenInUseUsageDescription": "WalkingAtlas uses your precise location during an active Walk to identify and unlock tiles you visit.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "During an active Walk, WalkingAtlas uses your precise location in the background, including while your phone is locked, to continue unlocking tiles."
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "During an active Walk, WalkingAtlas uses your precise location in the background, including while your phone is locked, to continue unlocking tiles.",
+        "NSLocationAlwaysUsageDescription": "During an active Walk, WalkingAtlas uses your precise location in the background, including while your phone is locked, to continue unlocking tiles."
       }
     },
     "plugins": [
@@ -23,6 +24,7 @@
       "expo-sqlite",
       "@maplibre/maplibre-react-native",
       "./plugins/withQuotedReactNativeBundleScript",
+      "./plugins/withAppReviewPrivacy",
       "expo-router"
     ],
     "android": {
