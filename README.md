@@ -133,9 +133,18 @@ No seed user data is required. Each install begins with an anonymous account and
 
 ## Built with Codex and GPT-5.6 Terra
 
-Codex with GPT-5.6 Terra was used as an active development partner, not merely for code generation. In Plan Mode, it helped evaluate the core design tradeoffs around tile size, GPS quality, city attribution, and fair-play validation. Those conversations informed the H3 resolution-12 grid, backend speed gate, and versioned city-boundary model.
+Codex with GPT-5.6 Terra was an active partner from product planning through implementation and verification. I used Plan Mode to explore alternatives, make explicit tradeoffs, and turn those decisions into the app's architecture.
 
-During implementation, Codex accelerated the Expo/React Native app structure, background-location and offline-queue flows, Cloudflare Worker API, H3 geometry serialization, PostGIS migrations, official-boundary import pipeline, and the automated tests for GPS quality and speed behavior. GPT-5.6 Terra was used through Codex in this development workflow.
+| Workflow | How Codex and GPT-5.6 Terra contributed | Result in Walking Tracker |
+| --- | --- | --- |
+| Tile design | Evaluated tile size against GPS drift, walking progress, and the ability to change the presentation later. | H3 resolution 12, with cells roughly 20 metres across. The H3 hierarchy preserves the option to aggregate existing progress into larger tiles later. |
+| Fair-play rules | Worked through GPS quality requirements and how to prevent a vehicle trip from being mistaken for a walk. | The Worker accepts only precise, recent, accurate fixes and pauses awarding above 15 km/h. It requires a new valid pair of fixes after a fast segment before unlocking resumes. |
+| City attribution | Compared reverse geocoding with a versioned-boundary approach and identified the need to keep city classification separate from durable tile ownership. | A PostGIS model with versioned municipal-boundary catalogs and independent H3-to-city assignments. |
+| Official city data | Planned and implemented the automated import workflow: retrieve the exact reviewed municipal features from U.S. Census and Statistics Canada services, convert them to WGS84 GeoJSON, validate matches and overlaps, and load them into Supabase/Postgres. | [`scripts/import-city-boundaries.mjs`](./scripts/import-city-boundaries.mjs) and the committed launch roster automate the city-boundary pipeline instead of relying on manual map data preparation. |
+| Mobile and API implementation | Accelerated the Expo/React Native app structure, background-location permissions, SQLite queue, Cloudflare Worker endpoints, H3 geometry serialization, and PostGIS migrations. | A working loop from starting a walk through server-verified tile awards to map and progress views. |
+| Verification | Helped create tests around the edge cases that matter for a location game. | Automated tests for H3 GeoJSON coordinate order, city-roster integrity, GPS-quality gates, and speed-gate behavior. |
+
+GPT-5.6 Terra was used through Codex throughout this workflow. Codex helped connect high-level product questions to implementation details, while I made the final product and engineering decisions.
 
 ## Project layout
 
